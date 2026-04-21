@@ -13,6 +13,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -24,8 +27,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build Docker Image
-      run: |
-        docker build -t secure-app .
+      run: docker build -t secure-app .
 
     - name: Tag Image
       run: |
@@ -39,23 +41,6 @@ jobs:
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: secure-app
-        format: table
-        exit-code: 0
-        severity: HIGH,CRITICAL
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build Docker Image
-      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/secure-app .
-
-    - name: Push Docker Image
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/secure-app
-
-    - name: Run Trivy Scan
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ${{ secrets.DOCKER_USERNAME }}/secure-app
         format: table
         exit-code: 0
         severity: HIGH,CRITICAL
